@@ -110,41 +110,4 @@ public final class ExecutionContext {
       return val != null && !val.equalsIgnoreCase(Settings.MODE_DISABLED);
   }
 
-  /**
-   * Returns true if automatic updates are enabled.
-   * @return True if automatic updates of database are enabled.
-   */
-  public boolean updatesEnabled() {
-      String val = settings.get(Settings.UPDATE_DATABASE);
-      return val != null && 
-          (val.equalsIgnoreCase(Settings.UPDATES_AUTO) ||
-           val.equalsIgnoreCase(Settings.UPDATES_DAILY));
-  }
-
-  /**
-   * @return True if daily updates are enabled
-   */
-  public boolean updateDaily() {
-    String val = settings.get(Settings.UPDATE_DATABASE);
-    return val != null && val.equalsIgnoreCase(Settings.UPDATES_DAILY);
-  }
-  /**
-   * @return True if weekly updates are enabled
-   */
-
-  public boolean updateWeekly(){
-      String val = settings.get(Settings.UPDATE_DATABASE);
-      return val != null && val.equalsIgnoreCase(Settings.UPDATES_WEEKLY);
-  }
-
-  /**
-   * @return True if automatic updates are enabled and run for each enforcer build
-   *
-   */
-  public boolean updateAlways() {
-    String val = settings.get(Settings.UPDATE_DATABASE);
-    return val != null && val.equalsIgnoreCase(Settings.UPDATES_AUTO);
-    
-  }
-
 }

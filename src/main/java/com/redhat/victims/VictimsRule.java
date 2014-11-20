@@ -111,8 +111,7 @@ public class VictimsRule implements EnforcerRule {
     ctx.setSettings(new Settings());
     ctx.getSettings().set(Settings.METADATA, metadata);
     ctx.getSettings().set(Settings.FINGERPRINT, fingerprint);
-    ctx.getSettings().set(Settings.UPDATE_DATABASE, updates);
-    
+
     // Only need to query using one hashing mechanism
     System.setProperty(VictimsConfig.Key.ALGORITHMS, "SHA512");
    
@@ -139,6 +138,10 @@ public class VictimsRule implements EnforcerRule {
     if (jdbcPass != null){
       System.setProperty(VictimsConfig.Key.DB_PASS, jdbcPass);
       ctx.getSettings().set(VictimsConfig.Key.DB_PASS, "(not shown)");
+    }
+    if(updates != null){
+      System.setProperty(VictimsConfig.Key.DB_UPDATE, updates);
+      ctx.getSettings().set(VictimsConfig.Key.DB_UPDATE, updates);
     }
     
     // Setup database
@@ -169,63 +172,6 @@ public class VictimsRule implements EnforcerRule {
 
     return ctx;
   }
-  
-  /**
-   * Updates the database according to the given configuration
-   * @param ctx
-   * @throws VictimsException
-   */
-  public void updateDatabase(ExecutionContext ctx) throws VictimsException {
-
-    Log log = ctx.getLog();
-
-    // Disable updates via command line -Dvictims.skip.update=true
-    String override = System.getProperty(Settings.UPDATES_OVERRIDE);
-    if (override != null && override.equalsIgnoreCase("true")){
-        log.warn("[victims-enforcer] Updates disabled via system property.");
-        return;
-    }
-
-    VictimsDBInterface db = ctx.getDatabase();
-    Date updated = db.lastUpdated(); 
-    
-    // update automatically every time
-    if (ctx.updateAlways()){
-      log.info(TextUI.fmt(Resources.INFO_UPDATES, updated.toString(), VictimsConfig.uri()));
-      db.synchronize();     
-   
-    // update once per day
-    } else if (ctx.updateDaily()) {
-
-        Date today = new Date();
-        SimpleDateFormat cmp = new SimpleDateFormat("yyyyMMdd");
-        boolean updatedToday = cmp.format(today).equals(cmp.format(updated));
-
-        if (!updatedToday) {
-            log.info(TextUI.fmt(Resources.INFO_UPDATES, updated.toString(), VictimsConfig.uri()));
-            db.synchronize();
-
-        } else {
-            log.debug("[victims-enforcer] database last synchronized: " + updated.toString());
-        }
-    } else if (ctx.updateWeekly()){
-
-        Date today = new Date();
-        SimpleDateFormat cmp = new SimpleDateFormat("yyyyw");
-        if (!cmp.format(today).equals(cmp.format(updated))){
-            log.info(TextUI.fmt(Resources.INFO_UPDATES, updated.toString(), VictimsConfig.uri()));
-            db.synchronize();
-        } else {
-            log.debug("[victims-enforcer] database last synchronized: " + updated.toString());
-        }
-
-    // updates disabled 
-    } else {
-      log.debug("[victims-enforcer] database synchronization disabled.");
-    }
-    
-  }
-  
 
   /**
    * This is a helper method that processes a single result that 
@@ -300,7 +246,13 @@ public class VictimsRule implements EnforcerRule {
       
       // Synchronize database with victims service
       try {
-          updateDatabase(ctx);
+        // Disable updates via command line -Dvictims.skip.update=true
+        String override = System.getProperty(Settings.UPDATES_OVERRIDE);
+        if (override != null && override.equalsIgnoreCase("true")){
+          log.warn("[victims-enforcer] Updates disabled via system property.");
+        } else{
+          ctx.getDatabase().synchronize();
+        }
       } catch (VictimsException e){
           log.warn("Unable to update victims database! Your CVE records might be out of date.");
           log.debug(e.toString());

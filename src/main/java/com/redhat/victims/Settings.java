@@ -41,14 +41,7 @@ public final class Settings {
     public static final String MODE_WARNING     = "warning";
     public static final String MODE_FATAL       = "fatal";
     public static final String MODE_DISABLED    = "disabled";
-    /*
-     * Allow developers to disable automatic updates or
-     * only update once per day.
-     */
-    public static final String UPDATES_DISABLED = "offline";
-    public static final String UPDATES_DAILY    = "daily";
-    public static final String UPDATES_WEEKLY   = "weekly";
-    public static final String UPDATES_AUTO     = "auto";
+
 
     /** System property used to disable update mechanism from the command line */
     public static final String UPDATES_OVERRIDE = "victims.skip.update";
@@ -76,8 +69,7 @@ public final class Settings {
 
         mappings.put(METADATA, MODE_WARNING);
         mappings.put(FINGERPRINT, MODE_FATAL);
-        mappings.put(UPDATE_DATABASE, UPDATES_AUTO);
-      
+
         defaults = Collections.unmodifiableMap(mappings);
     }
     /**

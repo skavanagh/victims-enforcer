@@ -130,7 +130,6 @@ public class VictimsRuleTest {
     context.setSettings(new Settings());
     context.getSettings().set(Settings.FINGERPRINT, Settings.MODE_FATAL);
     context.getSettings().set(Settings.METADATA, Settings.MODE_FATAL);
-    context.getSettings().set(Settings.UPDATE_DATABASE, Settings.UPDATES_AUTO);
     context.setDatabase(database);
     try{
       context.setCache(new VictimsResultCache());
@@ -149,7 +148,6 @@ public class VictimsRuleTest {
     context.setSettings(new Settings());
     context.getSettings().set(Settings.FINGERPRINT, Settings.MODE_WARNING);
     context.getSettings().set(Settings.METADATA, Settings.MODE_WARNING);
-    context.getSettings().set(Settings.UPDATE_DATABASE, Settings.UPDATES_AUTO);
     context.setDatabase(database);
     try {
       context.setCache(new VictimsResultCache());
@@ -172,60 +170,6 @@ public class VictimsRuleTest {
 
   }
 
-  @Test
-  public void testUpdateWeekly() throws Exception {
-
-      class MyVictimsSQLDB extends VictimsSqlDB
-      {
-          public MyVictimsSQLDB(Date d) throws VictimsException {
-              try {
-                  setLastUpdate(d);
-              } catch (IOException e) {
-                  throw new VictimsException("Failed to sync database", e);
-              }
-              cache = new VictimsResultCache();
-          }
-
-          @Override
-          public void synchronize() throws VictimsException {
-              Throwable throwable = null;
-
-              try {
-                  setLastUpdate(new Date());
-              } catch (IOException e) {
-                  throwable = e;
-              }
-              if (throwable != null) {
-                  throw new VictimsException("Failed to sync database", throwable);
-              }
-          }
-      };
-
-      DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-      Date lastUpdate = formatter.parse("2013-01-01");
-      Date today = new Date();
-
-      VictimsSqlDB database = new MyVictimsSQLDB (lastUpdate);
-
-      ExecutionContext context = new ExecutionContext();
-      context.setLog(logger);
-      context.setSettings(new Settings());
-      context.getSettings().set(Settings.FINGERPRINT, Settings.MODE_WARNING);
-      context.getSettings().set(Settings.METADATA, Settings.MODE_FATAL);
-      context.getSettings().set(Settings.UPDATE_DATABASE, Settings.UPDATES_WEEKLY);
-      context.setDatabase(database);
-
-      // Overwrite the default victims settings
-
-      VictimsRule enforcer = new VictimsRule();
-
-      assertTrue (context.updateWeekly());
-
-      enforcer.updateDatabase(context);
-
-      assertTrue ("Last update should be today", (formatter.format(today).equals(formatter.format(context.getDatabase().lastUpdated()))));
-  }
-
 
   @Test
   public void testArtifactWithNullFile() {
@@ -235,7 +179,6 @@ public class VictimsRuleTest {
       ctx.setSettings(new Settings());
       ctx.getSettings().set(Settings.FINGERPRINT, Settings.MODE_FATAL);
       ctx.getSettings().set(Settings.METADATA, Settings.MODE_FATAL);
-      ctx.getSettings().set(Settings.UPDATE_DATABASE, Settings.UPDATES_AUTO);
       ctx.setDatabase(database);
       Artifact artifact = new Artifact() {
           public String getGroupId() {
